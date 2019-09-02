@@ -2,7 +2,7 @@ const fs = require('fs')
 const EventEmitter = require('events')
 const rp = require('request-promise')
 
-class FileWatcher extends EventEmitter{
+class FileWatcher extends EventEmitter {
 	constructor(filename) {
 		super()
 		this.filename = filename
@@ -17,31 +17,46 @@ class FileWatcher extends EventEmitter{
 	}
 
 	handleChange(eventType, filename) {
-		if(this.inProcess) {
+		if (this.inProcess) {
 			return
 		}
 		this.inProcess = true
 		const bytesRead = fs.readSync(this.fd, this.buffer, 0, this.chunkSize, this.position)
 		this.position += bytesRead
 		this.emit('append', this.buffer.slice(0, bytesRead))
-		if(bytesRead === this.chunkSize) {
+		if (bytesRead === this.chunkSize) {
 			process.nextTick(this.handleChange.bind(this, eventType, filename))
 		}
 		this.inProcess = false
 	}
 }
 
-class ErrorHandler{
-	constructor() {
+class ErrorHandler {
+	constructor(filenames) {
 		this.fileWatcher = []
-		this.fileWatcher.push(new FileWatcher('./aa.log'))
+		filenames.forEach(filename => {
+			this.fileWatcher.push(new FileWatcher(filename))
+		})
 		this.fileWatcher.forEach(watcher => {
 			watcher.on('append', this.handleFileAppend.bind(this))
 		})
 	}
 
 	handleFileAppend(buffer) {
-		console.log(buffer.toString())
+		const content = buffer.toString()
+		console.log(content)
+		return rp.post({
+			url: '',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				msgtype: "text",
+				text: {
+					content
+				}
+			}),
+		})
 	}
 
 	sendWarning(msg) {
@@ -49,4 +64,4 @@ class ErrorHandler{
 	}
 }
 
-new ErrorHandler()
+new ErrorHandler([])
