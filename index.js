@@ -46,7 +46,7 @@ class ErrorHandler {
 		const content = buffer.toString()
 		console.log(content)
 		return rp.post({
-			url: '',
+			url: 'https://oapi.dingtalk.com/robot/send?access_token=2112772189fb55916f38f79d786984d9898db48200daabe58473dd1dcf4eec2f',
 			headers: {
 				'Content-Type': 'application/json'
 			},
@@ -64,4 +64,4 @@ class ErrorHandler {
 	}
 }
 
-new ErrorHandler([])
+new ErrorHandler(['/home/bvprod/.pm2/logs/MIAOMIAOHUO-API-error.log'])
